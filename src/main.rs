@@ -3,21 +3,23 @@ use std::io;
 use std::process;
 
 const BOARD_SIZE: usize = 9;
+const SQUARE_SIZE: usize = 3;
 
 fn main() {
     println!("Welcome to Sudoku-rust");
+    let mut board;
 
-    let mut choice = 0;
-    while choice != 3 {
+    loop {
         println!("1. Generate");
         println!("2. Solve (coming later)");
         println!("3. Exit");
         println!("Enter your choice: ");
-        choice = read_int();
+        let choice = read_int();
         match choice {
             1 => {
-                let board = generate();
-                print_board(board);
+                println!();
+                board = generate(BOARD_SIZE);
+                print_board(&board);
             }
             2 => println!("Coming later..."),
             3 => process::exit(0),
@@ -26,94 +28,70 @@ fn main() {
     }
 }
 
-fn read_int() -> i32 {
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read input");
-    if input.trim().parse::<i32>().is_err() {
-        print!("Please enter a valid integer: ");
-        return read_int();
+fn read_int() -> usize {
+    loop {
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read input");
+
+        match input.trim().parse::<usize>() {
+            Ok(num) => return num,
+            Err(_) => println!("Invalid input | please enter a number"),
+        }
     }
-    input.trim().parse().expect("Failed to parse input")
 }
 
-fn generate() -> [[i32; BOARD_SIZE]; BOARD_SIZE] {
-    let mut board = [[0; BOARD_SIZE]; BOARD_SIZE];
+fn generate(size: usize) -> Vec<Vec<i32>> {
+    let mut board = vec![vec![0; size]; size];
     let mut rng = rand::thread_rng();
-    let mut row = 0;
-    let mut col = 0;
-    while row < BOARD_SIZE {
-        while col < BOARD_SIZE {
+    for row in 0..size {
+        for col in 0..size {
             let num = rng.gen_range(0..10);
             if num == 0 {
-                board[row][col] = num;
-                col += 1;
+                board[row][col] = 0;
                 continue;
-            }
-            if is_num_valid(board, row, col, num) {
+            } else if is_num_valid(&board, row, col, num) {
                 board[row][col] = num;
             }
-            col += 1;
         }
-        row += 1;
-        col = 0;
     }
     board
 }
 
-fn is_num_valid(board: [[i32; BOARD_SIZE]; BOARD_SIZE], row: usize, col: usize, num: i32) -> bool {
-    let mut i = 0;
-    while i < BOARD_SIZE {
-        if board[row][i] == num {
+fn is_num_valid(board: &Vec<Vec<i32>>, row: usize, col: usize, num: i32) -> bool {
+    for i in 0..board.len() {
+        if board[row][i] == num || board[i][col] == num {
             return false;
         }
-        i += 1;
     }
-    let mut j = 0;
-    while j < BOARD_SIZE {
-        if board[j][col] == num {
-            return false;
-        }
-        j += 1;
-    }
-    let mut k = 0;
-    let mut l = 0;
-    while k < 3 {
-        while l < 3 {
-            if board[k + row - row % 3][l + col - col % 3] == num {
+
+    let sub_row = (row / SQUARE_SIZE) * SQUARE_SIZE;
+    let sub_col = (col / SQUARE_SIZE) * SQUARE_SIZE;
+    for i in 0..SQUARE_SIZE {
+        for j in 0..SQUARE_SIZE {
+            if board[sub_row + i][sub_col + j] == num {
                 return false;
             }
-            l += 1;
         }
-        k += 1;
-        l = 0;
     }
     true
 }
 
-fn print_board(board: [[i32; BOARD_SIZE]; BOARD_SIZE]) {
-    let mut i = 0;
-    let mut j = 0;
-    for row in board.iter() {
-        for col in row.iter() {
-            if *col == 0 {
-                print!(" . ");
+fn print_board(board: &Vec<Vec<i32>>) {
+    for i in 0..board.len() {
+        for j in 0..board.len() {
+            if board[i][j] == 0 {
+                print!(" 0 ");
             } else {
-                print!(" {} ", col);
+                print!(" {} ", board[i][j]);
             }
-            i += 1;
-            if i % 3 == 0 {
+            if (j + 1) % SQUARE_SIZE == 0 {
                 print!(" ");
             }
         }
-        if *row == [0; BOARD_SIZE] {
-            print!(" . ");
-        } else {
-            println!();
-        }
-        j += 1;
-        if j % 3 == 0 {
+        println!();
+        if (i + 1) % SQUARE_SIZE == 0 {
             println!();
         }
     }
