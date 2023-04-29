@@ -68,12 +68,12 @@ fn read_int() -> usize {
     }
 }
 
-fn generate(size: usize) -> Vec<Vec<i32>> {
+fn generate(size: usize) -> Vec<Vec<usize>> {
     let mut board = vec![vec![0; size]; size];
     let mut rng = rand::thread_rng();
     for row in 0..size {
         for col in 0..size {
-            let num = rng.gen_range(0..10);
+            let num: usize = rng.gen_range(0..=BOARD_SIZE);
             if num == 0 {
                 board[row][col] = 0;
                 continue;
@@ -85,7 +85,7 @@ fn generate(size: usize) -> Vec<Vec<i32>> {
     board
 }
 
-fn is_num_valid(board: &Vec<Vec<i32>>, row: usize, col: usize, num: i32) -> bool {
+fn is_num_valid(board: &Vec<Vec<usize>>, row: usize, col: usize, num: usize) -> bool {
     for i in 0..board.len() {
         if board[row][i] == num || board[i][col] == num {
             return false;
@@ -104,7 +104,7 @@ fn is_num_valid(board: &Vec<Vec<i32>>, row: usize, col: usize, num: i32) -> bool
     true
 }
 
-fn print_board(board: &Vec<Vec<i32>>) {
+fn print_board(board: &Vec<Vec<usize>>) {
     for i in 0..board.len() {
         for j in 0..board.len() {
             if board[i][j] == 0 {
