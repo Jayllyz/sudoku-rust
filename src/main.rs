@@ -12,7 +12,7 @@ mod tests {
     #[test]
     fn board_valid() {
         const BOARD_SIZE: usize = 9;
-        let board = generate(BOARD_SIZE);
+        let board = generate(BOARD_SIZE, 1);
         print_board(&board);
         assert_eq!(board.len(), 9);
 
@@ -33,21 +33,41 @@ mod tests {
 
 fn main() {
     println!("Welcome to Sudoku-rust");
-    let mut board;
+    let mut board = vec![];
 
     loop {
-        println!("1. Generate");
-        println!("2. Solve (coming later)");
+        println!("1. Generate sudoku (9x9)");
+        println!("2. Solve sudoku (backtracking)");
         println!("3. Exit");
         println!("Enter your choice: ");
         let choice = read_int();
         match choice {
             1 => {
                 println!();
-                board = generate(BOARD_SIZE);
+                println!("1. Easy");
+                println!("2. Medium");
+                println!("3. Hard");
+                println!("Enter your choice: ");
+
+                let difficulty = read_difficulty();
+
+                board = generate(BOARD_SIZE, difficulty);
                 print_board(&board);
             }
-            2 => println!("Coming later..."),
+            2 => {
+                if board.len() == 0 {
+                    println!("Please generate a board first");
+                    continue;
+                }
+
+                if resolv_backtrack(&mut board, 0, 0) {
+                    println!();
+                    print_board(&board);
+                } else {
+                    // should never happen
+                    println!("No solution found");
+                }
+            }
             3 => process::exit(0),
             _ => println!("Invalid choice"),
         }
@@ -68,17 +88,41 @@ fn read_int() -> usize {
     }
 }
 
-fn generate(size: usize) -> Vec<Vec<usize>> {
+fn read_difficulty() -> usize {
+    loop {
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read input");
+
+        match input.trim().parse::<usize>() {
+            Ok(num) => {
+                if num > 0 && num <= 3 {
+                    return num;
+                } else {
+                    println!("Invalid input | please enter a number between 1 and 3");
+                }
+            }
+            Err(_) => println!("Invalid input | please enter a number"),
+        }
+    }
+}
+
+fn generate(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
     let mut board = vec![vec![0; size]; size];
     let mut rng = rand::thread_rng();
-    for row in 0..size {
-        for col in 0..size {
-            let num: usize = rng.gen_range(0..=BOARD_SIZE);
-            if num == 0 {
-                board[row][col] = 0;
-                continue;
-            } else if is_num_valid(&board, row, col, num) {
-                board[row][col] = num;
+    let luck: f64;
+    match difficulty {
+        1 => luck = 0.4,
+        2 => luck = 0.45,
+        3 => luck = 0.5,
+        _ => luck = 0.4,
+    }
+    resolv_backtrack(&mut board, 0, 0); // generate a valid board
+    for i in 0..size {
+        for j in 0..size {
+            if rng.gen_bool(luck) {
+                board[i][j] = 0;
             }
         }
     }
@@ -121,4 +165,37 @@ fn print_board(board: &Vec<Vec<usize>>) {
             println!();
         }
     }
+}
+
+// backtracking algorithm
+// https://en.wikipedia.org/wiki/Sudoku_solving_algorithms#Backtracking
+// inspired by https://gist.github.com/raeffu/8331328
+
+fn resolv_backtrack(board: &mut Vec<Vec<usize>>, mut row: usize, mut col: usize) -> bool {
+    if col == board.len() {
+        col = 0;
+        row += 1;
+        if row == board.len() {
+            // end of board
+            return true;
+        }
+    }
+
+    if board[row][col] != 0 {
+        return resolv_backtrack(board, row, col + 1);
+    }
+
+    for num in 1..=board.len() {
+        if is_num_valid(board, row, col, num) {
+            board[row][col] = num;
+            if resolv_backtrack(board, row, col + 1) {
+                // found a number
+                return true;
+            }
+            // backtrack
+            board[row][col] = 0;
+        }
+    }
+
+    false
 }
