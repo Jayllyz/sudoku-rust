@@ -82,7 +82,7 @@ fn print_board(board: &Vec<Vec<i32>>) {
     for i in 0..board.len() {
         for j in 0..board.len() {
             if board[i][j] == 0 {
-                print!(" 0 ");
+                print!(" . ");
             } else {
                 print!(" {} ", board[i][j]);
             }
