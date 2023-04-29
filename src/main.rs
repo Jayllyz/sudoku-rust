@@ -5,6 +5,32 @@ use std::process;
 const BOARD_SIZE: usize = 9;
 const SQUARE_SIZE: usize = 3;
 
+#[cfg(test)]
+mod tests {
+    use crate::{generate, print_board};
+
+    #[test]
+    fn board_valid() {
+        const BOARD_SIZE: usize = 9;
+        let board = generate(BOARD_SIZE);
+        print_board(&board);
+        assert_eq!(board.len(), 9);
+
+        let mut hm = std::collections::HashMap::new();
+        for i in 0..BOARD_SIZE {
+            for j in 0..BOARD_SIZE {
+                if hm.contains_key(&board[i][j]) {
+                    assert!(false);
+                }
+                if board[i][j] != 0 {
+                    hm.insert(board[i][j], true);
+                }
+            }
+            hm.clear();
+        }
+    }
+}
+
 fn main() {
     println!("Welcome to Sudoku-rust");
     let mut board;
