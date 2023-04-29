@@ -7,7 +7,7 @@ const SQUARE_SIZE: usize = 3;
 
 #[cfg(test)]
 mod tests {
-    use crate::{generate, print_board};
+    use crate::{generate, print_board, resolv_backtrack};
 
     #[test]
     fn board_valid() {
@@ -28,6 +28,7 @@ mod tests {
             }
             hm.clear();
         }
+        assert_eq!(resolv_backtrack(&mut board.clone(), 0, 0), true);
     }
 }
 
