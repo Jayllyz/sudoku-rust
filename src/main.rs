@@ -1,12 +1,10 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use lazy_static::lazy_static;
-use rand::Rng;
 use std::sync::Mutex;
 use tera::{Context, Tera};
+mod sudoku;
 
 const BOARD_SIZE: usize = 9;
-const SQUARE_SIZE: usize = 3;
-
 struct Sudoku {
     pub board: Mutex<Vec<Vec<usize>>>,
 }
@@ -47,7 +45,7 @@ async fn update_table(
     difficulty: web::Path<usize>,
 ) -> impl Responder {
     let difficulty = difficulty.into_inner();
-    let board = generate(BOARD_SIZE, difficulty);
+    let board = sudoku::generate(BOARD_SIZE, difficulty);
     app_state.set_board(board.clone());
 
     let mut context = Context::new();
@@ -62,7 +60,7 @@ async fn update_table(
 
 async fn solve_table(tera: web::Data<Tera>, data: web::Data<Sudoku>) -> impl Responder {
     let mut board = data.board.lock().unwrap().clone();
-    resolv_backtrack(&mut board, 0, 0);
+    sudoku::resolv_backtrack(&mut board, 0, 0);
     data.set_board(board.clone());
 
     let mut context = Context::new();
@@ -106,74 +104,28 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-pub fn generate(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
-    let mut board = vec![vec![0; size]; size];
-    let mut rng = rand::thread_rng();
-    let luck: f64;
-    match difficulty {
-        1 => luck = 0.4,
-        2 => luck = 0.45,
-        3 => luck = 0.5,
-        _ => luck = 0.4,
-    }
-    resolv_backtrack(&mut board, 0, 0); // generate a valid board
-    for i in 0..size {
-        for j in 0..size {
-            if rng.gen_bool(luck) {
-                board[i][j] = 0;
+#[cfg(test)]
+mod tests {
+    use crate::{sudoku::generate, sudoku::resolv_backtrack};
+
+    #[test]
+    fn board_valid() {
+        const BOARD_SIZE: usize = 9;
+        let board = generate(BOARD_SIZE, 1);
+        assert_eq!(board.len(), 9);
+
+        let mut hm = std::collections::HashMap::new();
+        for i in 0..BOARD_SIZE {
+            for j in 0..BOARD_SIZE {
+                if hm.contains_key(&board[i][j]) {
+                    assert!(false);
+                }
+                if board[i][j] != 0 {
+                    hm.insert(board[i][j], true);
+                }
             }
+            hm.clear();
         }
+        assert_eq!(resolv_backtrack(&mut board.clone(), 0, 0), true);
     }
-    board
-}
-pub fn is_num_valid(board: &Vec<Vec<usize>>, row: usize, col: usize, num: usize) -> bool {
-    for i in 0..board.len() {
-        if board[row][i] == num || board[i][col] == num {
-            return false;
-        }
-    }
-
-    let sub_row = (row / SQUARE_SIZE) * SQUARE_SIZE;
-    let sub_col = (col / SQUARE_SIZE) * SQUARE_SIZE;
-    for i in 0..SQUARE_SIZE {
-        for j in 0..SQUARE_SIZE {
-            if board[sub_row + i][sub_col + j] == num {
-                return false;
-            }
-        }
-    }
-    true
-}
-
-// backtracking algorithm
-// https://en.wikipedia.org/wiki/Sudoku_solving_algorithms#Backtracking
-// inspired by https://gist.github.com/raeffu/8331328
-
-pub fn resolv_backtrack(board: &mut Vec<Vec<usize>>, mut row: usize, mut col: usize) -> bool {
-    if col == board.len() {
-        col = 0;
-        row += 1;
-        if row == board.len() {
-            // end of board
-            return true;
-        }
-    }
-
-    if board[row][col] != 0 {
-        return resolv_backtrack(board, row, col + 1);
-    }
-
-    for num in 1..=board.len() {
-        if is_num_valid(board, row, col, num) {
-            board[row][col] = num;
-            if resolv_backtrack(board, row, col + 1) {
-                // found a number
-                return true;
-            }
-            // backtrack
-            board[row][col] = 0;
-        }
-    }
-
-    false
 }
