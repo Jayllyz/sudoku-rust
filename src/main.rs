@@ -103,3 +103,29 @@ async fn main() -> std::io::Result<()> {
     .run()
     .await
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{sudoku::generate, sudoku::resolv_backtrack};
+
+    #[test]
+    fn board_valid() {
+        const BOARD_SIZE: usize = 9;
+        let board = generate(BOARD_SIZE, 1);
+        assert_eq!(board.len(), 9);
+
+        let mut hm = std::collections::HashMap::new();
+        for i in 0..BOARD_SIZE {
+            for j in 0..BOARD_SIZE {
+                if hm.contains_key(&board[i][j]) {
+                    assert!(false);
+                }
+                if board[i][j] != 0 {
+                    hm.insert(board[i][j], true);
+                }
+            }
+            hm.clear();
+        }
+        assert_eq!(resolv_backtrack(&mut board.clone(), 0, 0), true);
+    }
+}
