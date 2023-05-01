@@ -5,10 +5,10 @@ Recently started learning Rust and wanted to build something to practice because
 
 ## Roadmap 🗺️
 
-- Generate a random sudoku board
-- Choose between 3 difficulties (easy, medium, hard)
-- Sudoku solver
-- local web app
+- Generate a random sudoku board 🟢
+- Choose between 3 difficulties (easy, medium, hard) 🟢
+- Sudoku solver 🟢
+- local web app 🟠
 - Playable game in web app
 
 ## Run Locally 🚀
