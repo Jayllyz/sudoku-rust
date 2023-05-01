@@ -1,115 +1,112 @@
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use lazy_static::lazy_static;
 use rand::Rng;
-use std::io;
-use std::process;
+use std::sync::Mutex;
+use tera::{Context, Tera};
 
 const BOARD_SIZE: usize = 9;
 const SQUARE_SIZE: usize = 3;
 
-#[cfg(test)]
-mod tests {
-    use crate::{generate, print_board, resolv_backtrack};
+struct Sudoku {
+    pub board: Mutex<Vec<Vec<usize>>>,
+}
 
-    #[test]
-    fn board_valid() {
-        const BOARD_SIZE: usize = 9;
-        let board = generate(BOARD_SIZE, 1);
-        print_board(&board);
-        assert_eq!(board.len(), 9);
-
-        let mut hm = std::collections::HashMap::new();
-        for i in 0..BOARD_SIZE {
-            for j in 0..BOARD_SIZE {
-                if hm.contains_key(&board[i][j]) {
-                    assert!(false);
-                }
-                if board[i][j] != 0 {
-                    hm.insert(board[i][j], true);
-                }
-            }
-            hm.clear();
-        }
-        assert_eq!(resolv_backtrack(&mut board.clone(), 0, 0), true);
+impl Sudoku {
+    fn set_board(&self, board: Vec<Vec<usize>>) {
+        *self.board.lock().unwrap() = board;
     }
 }
 
-fn main() {
-    println!("Welcome to Sudoku-rust");
-    let mut board = vec![];
-
-    loop {
-        println!("1. Generate sudoku (9x9)");
-        println!("2. Solve sudoku (backtracking)");
-        println!("3. Exit");
-        println!("Enter your choice: ");
-        let choice = read_int();
-        match choice {
-            1 => {
-                println!();
-                println!("1. Easy");
-                println!("2. Medium");
-                println!("3. Hard");
-                println!("Enter your choice: ");
-
-                let difficulty = read_difficulty();
-
-                board = generate(BOARD_SIZE, difficulty);
-                print_board(&board);
+lazy_static! {
+    pub static ref TEMPLATES: Tera = {
+        let mut tera = match Tera::new("templates/**/*.html") {
+            Ok(t) => t,
+            Err(e) => {
+                println!("Parsing error(s): {}", e);
+                ::std::process::exit(1);
             }
-            2 => {
-                if board.len() == 0 {
-                    println!("Please generate a board first");
-                    continue;
-                }
-
-                if resolv_backtrack(&mut board, 0, 0) {
-                    println!();
-                    print_board(&board);
-                } else {
-                    // should never happen
-                    println!("No solution found");
-                }
-            }
-            3 => process::exit(0),
-            _ => println!("Invalid choice"),
-        }
-    }
+        };
+        tera.autoescape_on(vec![".html", ".sql"]);
+        tera
+    };
 }
 
-fn read_int() -> usize {
-    loop {
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read input");
-
-        match input.trim().parse::<usize>() {
-            Ok(num) => return num,
-            Err(_) => println!("Invalid input | please enter a number"),
-        }
-    }
+#[get("/")]
+async fn home(tera: web::Data<Tera>) -> impl Responder {
+    let empty_board = vec![vec![0; BOARD_SIZE]; BOARD_SIZE];
+    let mut context = Context::new();
+    context.insert("title", "Sudoku-rust");
+    context.insert("rows", &empty_board);
+    let template = tera.render("pages/index.html", &context).expect("Error");
+    HttpResponse::Ok().body(template)
 }
 
-fn read_difficulty() -> usize {
-    loop {
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read input");
+async fn update_table(
+    tera: web::Data<Tera>,
+    app_state: web::Data<Sudoku>,
+    difficulty: web::Path<usize>,
+) -> impl Responder {
+    let difficulty = difficulty.into_inner();
+    let board = generate(BOARD_SIZE, difficulty);
+    app_state.set_board(board.clone());
 
-        match input.trim().parse::<usize>() {
-            Ok(num) => {
-                if num > 0 && num <= 3 {
-                    return num;
-                } else {
-                    println!("Invalid input | please enter a number between 1 and 3");
-                }
-            }
-            Err(_) => println!("Invalid input | please enter a number"),
-        }
-    }
+    let mut context = Context::new();
+    context.insert("title", "Sudoku-rust");
+    context.insert("rows", &board);
+    let template = tera
+        .render("pages/index.html", &context)
+        .expect("Error during rendering");
+
+    HttpResponse::Ok().body(template)
 }
 
-fn generate(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
+async fn solve_table(tera: web::Data<Tera>, data: web::Data<Sudoku>) -> impl Responder {
+    let mut board = data.board.lock().unwrap().clone();
+    resolv_backtrack(&mut board, 0, 0);
+    data.set_board(board.clone());
+
+    let mut context = Context::new();
+    context.insert("title", "Sudoku-rust");
+    context.insert("rows", &board);
+    let template = tera
+        .render("pages/index.html", &context)
+        .expect("Error during rendering");
+
+    HttpResponse::Ok().body(template)
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let app_state = web::Data::new(Sudoku {
+        board: Mutex::new(vec![vec![0; BOARD_SIZE]; BOARD_SIZE]),
+    });
+    HttpServer::new(move || {
+        App::new()
+            .app_data(app_state.clone())
+            .app_data(web::Data::new(TEMPLATES.clone()))
+            .service(
+                actix_files::Files::new("/static", "./static/")
+                    .show_files_listing()
+                    .use_last_modified(true),
+            )
+            .service(home)
+            .service(
+                web::resource("/update/{difficulty}")
+                    .route(web::post().to(update_table))
+                    .app_data(app_state.clone()),
+            )
+            .service(
+                web::resource("/solve")
+                    .route(web::post().to(solve_table))
+                    .app_data(app_state.clone()),
+            )
+    })
+    .bind(("127.0.0.1", 8000))?
+    .run()
+    .await
+}
+
+pub fn generate(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
     let mut board = vec![vec![0; size]; size];
     let mut rng = rand::thread_rng();
     let luck: f64;
@@ -129,8 +126,7 @@ fn generate(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
     }
     board
 }
-
-fn is_num_valid(board: &Vec<Vec<usize>>, row: usize, col: usize, num: usize) -> bool {
+pub fn is_num_valid(board: &Vec<Vec<usize>>, row: usize, col: usize, num: usize) -> bool {
     for i in 0..board.len() {
         if board[row][i] == num || board[i][col] == num {
             return false;
@@ -149,30 +145,11 @@ fn is_num_valid(board: &Vec<Vec<usize>>, row: usize, col: usize, num: usize) -> 
     true
 }
 
-fn print_board(board: &Vec<Vec<usize>>) {
-    for i in 0..board.len() {
-        for j in 0..board.len() {
-            if board[i][j] == 0 {
-                print!(" . ");
-            } else {
-                print!(" {} ", board[i][j]);
-            }
-            if (j + 1) % SQUARE_SIZE == 0 {
-                print!(" ");
-            }
-        }
-        println!();
-        if (i + 1) % SQUARE_SIZE == 0 {
-            println!();
-        }
-    }
-}
-
 // backtracking algorithm
 // https://en.wikipedia.org/wiki/Sudoku_solving_algorithms#Backtracking
 // inspired by https://gist.github.com/raeffu/8331328
 
-fn resolv_backtrack(board: &mut Vec<Vec<usize>>, mut row: usize, mut col: usize) -> bool {
+pub fn resolv_backtrack(board: &mut Vec<Vec<usize>>, mut row: usize, mut col: usize) -> bool {
     if col == board.len() {
         col = 0;
         row += 1;

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/styles/main.css" />
+  </head>
+  <body>
+    <main>
+      <h1>{{ title }}</h1>
+      {% block content %} {% include "layout/table.html" %} {% endblock content %}
+
+      <div class="button-container">
+        <div class="flexbox">
+          <form action="/update/1" method="post">
+            <input class="generate-button easy-button" type="submit" value="Easy" />
+          </form>
+
+          <form action="/update/2" method="post">
+            <input class="generate-button medium-button" type="submit" value="Medium" />
+          </form>
+
+          <form action="/update/3" method="post">
+            <input class="generate-button hard-button" type="submit" value="Hard" />
+          </form>
+        </div>
+
+        <form action="/solve" method="post">
+          <input class="solve-button" type="submit" value="Solve" />
+        </form>
+      </div>
+    </main>
+  </body>
+</html>
