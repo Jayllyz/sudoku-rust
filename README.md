@@ -37,7 +37,7 @@ Build the docker image
 Run the docker container
 
 ```bash
-  docker run --name sudoku-rust -it sudoku-rust
+  docker run --name sudoku-rust -it -p 8000:8000 sudoku-rust
 ```
 
 ## Author 👨‍💻
