@@ -1,15 +1,18 @@
 # Sudoku-rust 🧩
 
+![test](https://github.com/jayllyz/sudoku-rust/actions/workflows/test.yml/badge.svg)
+![Super-Linter](https://github.com/jayllyz/sudoku-rust/actions/workflows/lint.yml/badge.svg)
+
 Personal project to learn Rust and improve my algorithm skills.
 Recently started learning Rust and wanted to build something to practice because i really like the language.
 
 ## Roadmap 🗺️
 
-- Generate a random sudoku board 🟢
-- Choose between 3 difficulties (easy, medium, hard) 🟢
-- Sudoku solver 🟢
-- local web app 🟠
-- Playable game in web app
+- Generate a random sudoku board ✅
+- Choose between 3 difficulties (easy, medium, hard) ✅
+- Sudoku solver ✅
+- local web app ✅
+- Playable game in web app 🚧
 
 ## Run Locally 🚀
 
