@@ -5,18 +5,18 @@ const SQUARE_SIZE: usize = 3;
 pub fn generate(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
     let mut board = vec![vec![0; size]; size];
     let mut rng = rand::thread_rng();
-    let luck: f64;
-    match difficulty {
-        1 => luck = 0.4,
-        2 => luck = 0.5,
-        3 => luck = 0.6,
-        _ => luck = 0.4,
-    }
+    let luck: f64 = match difficulty {
+        1 => 0.4,
+        2 => 0.5,
+        3 => 0.6,
+        _ => 0.4,
+    };
+
     resolv_backtrack(&mut board, 0, 0); // generate a valid board
-    for i in 0..size {
+    for _ in 0..size {
         for j in 0..size {
             if rng.gen_bool(luck) {
-                board[i][j] = 0;
+                board[j][j] = 0;
             }
         }
     }
