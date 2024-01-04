@@ -26,7 +26,7 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_JSCPD: false
           VALIDATE_RUST_2015: false
-          FILTER_REGEX_EXCLUDE: src/layout/*.html
+          FILTER_REGEX_EXCLUDE: templates/layout/*.html
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ...
