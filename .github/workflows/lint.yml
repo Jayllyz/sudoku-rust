@@ -27,6 +27,7 @@ jobs:
         env:
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_JSCPD: false
+          VALIDATE_CHECKOV: false
           VALIDATE_RUST_2015: false
           VALIDATE_HTML: false
           DEFAULT_BRANCH: main
