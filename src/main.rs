@@ -106,7 +106,7 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{sudoku::generate, sudoku::resolv_backtrack};
+    use crate::sudoku::{generate, resolv_backtrack};
 
     #[test]
     fn board_valid() {
