@@ -1,7 +1,6 @@
 # Sudoku-rust 🧩
 
-![test](https://github.com/jayllyz/sudoku-rust/actions/workflows/test.yml/badge.svg)
-![Super-Linter](https://github.com/jayllyz/sudoku-rust/actions/workflows/lint.yml/badge.svg)
+![ci](https://github.com/jayllyz/sudoku-rust/actions/workflows/ci.yml/badge.svg)
 
 Personal project to learn Rust and improve my algorithm skills.
 Recently started learning Rust and wanted to build something to practice because i really like the language.
