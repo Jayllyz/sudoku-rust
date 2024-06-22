@@ -115,17 +115,17 @@ mod tests {
         assert_eq!(board.len(), 9);
 
         let mut hm = std::collections::HashMap::new();
-        for i in 0..BOARD_SIZE {
-            for j in 0..BOARD_SIZE {
-                if hm.contains_key(&board[i][j]) {
-                    assert!(false);
+        for row in board.iter().take(BOARD_SIZE).enumerate() {
+            for value in row.1.iter().take(BOARD_SIZE) {
+                if hm.contains_key(value) {
+                    panic!("Invalid board");
                 }
-                if board[i][j] != 0 {
-                    hm.insert(board[i][j], true);
+                if *value != 0 {
+                    hm.insert(*value, true);
                 }
             }
             hm.clear();
         }
-        assert_eq!(resolv_backtrack(&mut board.clone(), 0, 0), true);
+        assert!(resolv_backtrack(&mut board.clone(), 0, 0));
     }
 }
