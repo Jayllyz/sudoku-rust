@@ -13,16 +13,16 @@ pub fn generate(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
     };
 
     resolv_backtrack(&mut board, 0, 0); // generate a valid board
-    for _ in 0..size {
+    for i in board.iter_mut().take(size) {
         for j in 0..size {
             if rng.gen_bool(luck) {
-                board[j][j] = 0;
+                (*i)[j] = 0;
             }
         }
     }
     board
 }
-pub fn is_num_valid(board: &Vec<Vec<usize>>, row: usize, col: usize, num: usize) -> bool {
+pub fn is_num_valid(board: &[Vec<usize>], row: usize, col: usize, num: usize) -> bool {
     for i in 0..board.len() {
         if board[row][i] == num || board[i][col] == num {
             return false;
