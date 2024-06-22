@@ -106,7 +106,7 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{sudoku::generate, sudoku::resolv_backtrack};
+    use crate::sudoku::{generate, resolv_backtrack};
 
     #[test]
     fn board_valid() {
@@ -127,5 +127,14 @@ mod tests {
             hm.clear();
         }
         assert!(resolv_backtrack(&mut board.clone(), 0, 0));
+    }
+
+    #[test]
+    fn board_invalid() {
+        const BOARD_SIZE: usize = 9;
+        let mut board = generate(BOARD_SIZE, 1);
+        board[0][0] = 1;
+        board[0][1] = 1;
+        assert!(!resolv_backtrack(&mut board.clone(), 0, 0));
     }
 }
