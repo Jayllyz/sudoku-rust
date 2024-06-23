@@ -17,21 +17,22 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install toolchain
-        uses: moonrepo/setup-rust@d8048d4fdff0633123678b093726e6d7c8ad6de5 # v1.2.0
+        uses: moonrepo/setup-rust@v1
         with:
            components: clippy,rustfmt
            cache-base: main
            
       - name: Check formatting
-        run: cargo fmt --check
+        run: cargo fmt --all --check
 
       - name: Run Clippy
         run: cargo clippy
 
-      - name: Build
+      - name: Run Build
         run: cargo build
 
       - name: Run tests
