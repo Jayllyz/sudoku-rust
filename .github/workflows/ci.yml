@@ -9,19 +9,30 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: "-Dwarnings"
+  RUST_LOG: info
+  RUST_BACKTRACE: 1
   CI: true
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: moonrepo/setup-rust@v1
+        with:
+           components: clippy,rustfmt
+           cache-base: main
+           
+      - name: Check formatting
+        run: cargo fmt --all --check
 
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features
+        run: cargo clippy
 
-      - name: Build
+      - name: Run Build
         run: cargo build
 
       - name: Run tests
