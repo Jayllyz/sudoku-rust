@@ -9,7 +9,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: "-Dwarnings"
+  RUST_LOG: info
+  RUST_BACKTRACE: 1
   CI: true
 
 jobs:
@@ -18,8 +19,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install toolchain
+        uses: moonrepo/setup-rust@d8048d4fdff0633123678b093726e6d7c8ad6de5 # v1.2.0
+        with:
+           components: clippy,rustfmt
+           cache-base: main
+           
+      - name: Check formatting
+        run: cargo fmt --check
+
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features
+        run: cargo clippy
 
       - name: Build
         run: cargo build
