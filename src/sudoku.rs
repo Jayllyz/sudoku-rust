@@ -25,7 +25,7 @@ pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
 }
 
 // Fill a square block with random numbers
-fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl Rng) {
+fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl Rng) -> () {
     let mut nums: Vec<usize> = (1..=board.len()).collect();
     nums.shuffle(rng);
 
@@ -36,7 +36,7 @@ fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl R
     }
 }
 
-fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rng) -> bool {
+fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rng) -> () {
     let size = board.len();
     let total_cells = size * size;
     let to_remove = match difficulty {
@@ -54,8 +54,6 @@ fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rn
     for (row, col) in positions.iter().take(to_remove) {
         board[*row][*col] = 0;
     }
-
-    true
 }
 
 // Check if a number is valid in a cell (row, col)
