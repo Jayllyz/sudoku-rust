@@ -18,8 +18,8 @@ pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
             continue;
         }
 
-        // Remove numbers while maintaining a unique solution
-        remove_num(&mut board, difficulty, &mut rng);
+        // Remove numbers
+        remove_numbers(&mut board, difficulty, &mut rng);
         return board;
     }
 }
@@ -36,14 +36,14 @@ fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl R
     }
 }
 
-fn remove_num(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rng) -> bool {
+fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rng) -> bool {
     let size = board.len();
+    let total_cells = size * size;
     let to_remove = match difficulty {
-        1 => (size * size) / 2,
-        2 => (size * size * 3) / 5,
-        3 => (size * size * 7) / 10,
-        4 => size * size - 17,
-        _ => (size * size) / 2,
+        1 => total_cells / 3,     // Easy: remove 1/3
+        2 => total_cells * 4 / 9, // Medium: remove 4/9
+        3 => total_cells * 2 / 3, // Very Hard: remove 2/3
+        _ => total_cells / 3,     // Default to Easy
     };
 
     let mut positions: Vec<(usize, usize)> = (0..size)
@@ -51,10 +51,8 @@ fn remove_num(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rng) -
         .collect();
     positions.shuffle(rng);
 
-    for _ in 0..to_remove {
-        if let Some((row, col)) = positions.pop() {
-            board[row][col] = 0;
-        }
+    for (row, col) in positions.iter().take(to_remove) {
+        board[*row][*col] = 0;
     }
 
     true
