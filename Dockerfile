@@ -21,4 +21,4 @@ RUN cargo build --release --bin sudoku-rust
 FROM debian:stable-slim AS prod
 WORKDIR /app
 COPY --from=build /app/target/release/sudoku-rust /usr/local/bin
-ENTRYPOINT ["/usr/local/bin/app"]
+ENTRYPOINT ["/usr/local/bin/sudoku-rust"]
