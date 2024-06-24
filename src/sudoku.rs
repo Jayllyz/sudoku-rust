@@ -67,12 +67,14 @@ pub fn is_num_valid(board: &[Vec<usize>], row: usize, col: usize, num: usize) ->
     let sub_row = (row / SQUARE_SIZE) * SQUARE_SIZE;
     let sub_col = (col / SQUARE_SIZE) * SQUARE_SIZE;
 
-    board.iter().skip(sub_row).take(SQUARE_SIZE).any(|row| {
+    if board.iter().skip(sub_row).take(SQUARE_SIZE).any(|row| {
         row.iter()
             .skip(sub_col)
             .take(SQUARE_SIZE)
             .any(|&cell| cell == num)
-    });
+    }) {
+        return false;
+    }
 
     true
 }
