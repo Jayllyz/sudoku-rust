@@ -30,7 +30,11 @@ Go to the project directory
 Build the docker image
 
 ```bash
-  docker build -t sudoku-rust .
+  # with live reload
+  docker build -t sudoku-rust --target=dev .
+
+  # release optimized
+  docker build -t sudoku-rust --target=prod .
 ```
 
 Run the docker container
