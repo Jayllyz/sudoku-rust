@@ -40,6 +40,10 @@ Build the docker image
 Run the docker container
 
 ```bash
+  # with live reload
+  docker run --rm --name sudoku-rust -it -p 8000:8000 -v $(pwd):/app sudoku-rust
+
+  # release optimized
   docker run --name sudoku-rust -it -p 8000:8000 sudoku-rust
 ```
 

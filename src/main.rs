@@ -45,7 +45,7 @@ async fn update_table(
     difficulty: web::Path<usize>,
 ) -> impl Responder {
     let difficulty = difficulty.into_inner();
-    let board = sudoku::generate(BOARD_SIZE, difficulty);
+    let board = sudoku::generate_board(BOARD_SIZE, difficulty);
     app_state.set_board(board.clone());
 
     let mut context = Context::new();
@@ -106,12 +106,12 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::sudoku::{generate, resolv_backtrack};
+    use crate::sudoku::{generate_board, resolv_backtrack};
 
     #[test]
     fn board_valid() {
         const BOARD_SIZE: usize = 9;
-        let board = generate(BOARD_SIZE, 1);
+        let board = generate_board(BOARD_SIZE, 1);
         assert_eq!(board.len(), 9);
 
         let mut hm = std::collections::HashMap::new();
