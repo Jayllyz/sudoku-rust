@@ -1,5 +1,5 @@
-use rand::Rng;
 use rand::prelude::SliceRandom;
+use rand::Rng;
 
 const SQUARE_SIZE: usize = 3;
 
@@ -30,7 +30,7 @@ pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
         _ => ((board.len() as f64 * board.len() as f64) * 0.5) as usize,
     };
     let mut counter = board.len() as usize * board.len() as usize;
-    
+
     while counter > keep {
         let row = rng.gen_range(0..size);
         let col = rng.gen_range(0..size);
@@ -44,7 +44,7 @@ pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
 }
 
 // Fill a square block with random numbers
-fn fill_block(board: &mut Vec<Vec<usize>>, row: usize, col: usize, rng: &mut impl Rng) {
+fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl Rng) {
     let mut nums: Vec<usize> = (1..=board.len()).collect();
     nums.shuffle(rng);
 
@@ -54,7 +54,6 @@ fn fill_block(board: &mut Vec<Vec<usize>>, row: usize, col: usize, rng: &mut imp
         }
     }
 }
-
 
 // Check if a number is valid in a cell (row, col)
 pub fn is_num_valid(board: &[Vec<usize>], row: usize, col: usize, num: usize) -> bool {
