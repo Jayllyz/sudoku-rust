@@ -106,12 +106,12 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::sudoku::{generate, resolv_backtrack};
+    use crate::sudoku::{generate_board, resolv_backtrack};
 
     #[test]
     fn board_valid() {
         const BOARD_SIZE: usize = 9;
-        let board = generate(BOARD_SIZE, 1);
+        let board = generate_board(BOARD_SIZE, 1);
         assert_eq!(board.len(), 9);
 
         let mut hm = std::collections::HashMap::new();
@@ -127,26 +127,5 @@ mod tests {
             hm.clear();
         }
         assert!(resolv_backtrack(&mut board.clone(), 0, 0));
-    }
-
-    #[test]
-    fn board_invalid() {
-        const BOARD_SIZE: usize = 9;
-        let board = generate(BOARD_SIZE, 1);
-        assert_eq!(board.len(), 9);
-
-        let mut hm = std::collections::HashMap::new();
-        for row in board.iter().take(BOARD_SIZE).enumerate() {
-            for value in row.1.iter().take(BOARD_SIZE) {
-                if hm.contains_key(value) {
-                    panic!("Invalid board");
-                }
-                if *value != 0 {
-                    hm.insert(*value, true);
-                }
-            }
-            hm.clear();
-        }
-        assert!(!resolv_backtrack(&mut board.clone(), 0, 0));
     }
 }
