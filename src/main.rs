@@ -45,7 +45,7 @@ async fn update_table(
     difficulty: web::Path<usize>,
 ) -> impl Responder {
     let difficulty = difficulty.into_inner();
-    let board = sudoku::generate(BOARD_SIZE, difficulty);
+    let board = sudoku::generate_board(BOARD_SIZE, difficulty);
     app_state.set_board(board.clone());
 
     let mut context = Context::new();
@@ -127,5 +127,26 @@ mod tests {
             hm.clear();
         }
         assert!(resolv_backtrack(&mut board.clone(), 0, 0));
+    }
+
+    #[test]
+    fn board_invalid() {
+        const BOARD_SIZE: usize = 9;
+        let board = generate(BOARD_SIZE, 1);
+        assert_eq!(board.len(), 9);
+
+        let mut hm = std::collections::HashMap::new();
+        for row in board.iter().take(BOARD_SIZE).enumerate() {
+            for value in row.1.iter().take(BOARD_SIZE) {
+                if hm.contains_key(value) {
+                    panic!("Invalid board");
+                }
+                if *value != 0 {
+                    hm.insert(*value, true);
+                }
+            }
+            hm.clear();
+        }
+        assert!(!resolv_backtrack(&mut board.clone(), 0, 0));
     }
 }

@@ -1,4 +1,5 @@
 FROM rust:1 AS base
+RUN cargo install cargo-chef
 WORKDIR /app
 
 FROM base AS dev 
@@ -7,7 +8,6 @@ COPY . .
 CMD ["cargo", "watch", "-x", "run"]
 
 FROM base AS planner
-RUN cargo install cargo-chef
 COPY . .
 RUN cargo chef prepare  --recipe-path recipe.json
 
@@ -21,4 +21,6 @@ RUN cargo build --release --bin sudoku-rust
 FROM debian:stable-slim AS prod
 WORKDIR /app
 COPY --from=build /app/target/release/sudoku-rust /usr/local/bin
+COPY --from=build /app/styles /app/styles
+COPY --from=build /app/templates /app/templates
 ENTRYPOINT ["/usr/local/bin/sudoku-rust"]
