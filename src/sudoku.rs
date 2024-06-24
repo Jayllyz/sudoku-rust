@@ -4,43 +4,24 @@ use rand::Rng;
 const SQUARE_SIZE: usize = 3;
 
 pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
-    let mut board = vec![vec![0; size]; size];
-    let mut rng = rand::thread_rng();
+    loop {
+        let mut board = vec![vec![0; size]; size];
+        let mut rng = rand::thread_rng();
 
-    // Fill the diagonal blocks, this is the "seed"
-    for i in (0..size).step_by((size as f64).sqrt() as usize) {
-        fill_block(&mut board, i, i, &mut rng);
-    }
-
-    // Solve the board
-    let res = resolv_backtrack(&mut board, 0, 0);
-    if !res {
-        return generate_board(size, difficulty);
-    }
-
-    let keep: usize = match difficulty {
-        // Easy keep 50% of the numbers
-        1 => ((board.len() as f64 * board.len() as f64) * 0.5) as usize,
-        // Medium keep 40% of the numbers
-        2 => ((board.len() as f64 * board.len() as f64) * 0.4) as usize,
-        // Hard keep 30% of the numbers
-        3 => ((board.len() as f64 * board.len() as f64) * 0.3) as usize,
-        // Maximum difficulty keep 17 numbers
-        4 => 17,
-        _ => ((board.len() as f64 * board.len() as f64) * 0.5) as usize,
-    };
-    let mut counter = board.len() as usize * board.len() as usize;
-
-    while counter > keep {
-        let row = rng.gen_range(0..size);
-        let col = rng.gen_range(0..size);
-        if board[row][col] != 0 {
-            board[row][col] = 0;
-            counter -= 1;
+        // Fill the diagonal blocks
+        for i in (0..size).step_by((size as f64).sqrt() as usize) {
+            fill_block(&mut board, i, i, &mut rng);
         }
-    }
 
-    board
+        // Solve the board
+        if !resolv_backtrack(&mut board, 0, 0) {
+            continue;
+        }
+
+        // Remove numbers while maintaining a unique solution
+        remove_num(&mut board, difficulty, &mut rng);
+        return board;
+    }
 }
 
 // Fill a square block with random numbers
@@ -55,23 +36,48 @@ fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl R
     }
 }
 
+fn remove_num(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rng) -> bool {
+    let size = board.len();
+    let to_remove = match difficulty {
+        1 => (size * size) / 2,
+        2 => (size * size * 3) / 5,
+        3 => (size * size * 7) / 10,
+        4 => size * size - 17,
+        _ => (size * size) / 2,
+    };
+
+    let mut positions: Vec<(usize, usize)> = (0..size)
+        .flat_map(|r| (0..size).map(move |c| (r, c)))
+        .collect();
+    positions.shuffle(rng);
+
+    for _ in 0..to_remove {
+        if let Some((row, col)) = positions.pop() {
+            board[row][col] = 0;
+        }
+    }
+
+    true
+}
+
 // Check if a number is valid in a cell (row, col)
 pub fn is_num_valid(board: &[Vec<usize>], row: usize, col: usize, num: usize) -> bool {
-    for i in 0..board.len() {
-        if board[row][i] == num || board[i][col] == num {
-            return false;
-        }
+    let size = board.len();
+
+    if (0..size).any(|i| board[row][i] == num || board[i][col] == num) {
+        return false;
     }
 
     let sub_row = (row / SQUARE_SIZE) * SQUARE_SIZE;
     let sub_col = (col / SQUARE_SIZE) * SQUARE_SIZE;
-    for i in 0..SQUARE_SIZE {
-        for j in 0..SQUARE_SIZE {
-            if board[sub_row + i][sub_col + j] == num {
-                return false;
-            }
-        }
-    }
+
+    board.iter().skip(sub_row).take(SQUARE_SIZE).any(|row| {
+        row.iter()
+            .skip(sub_col)
+            .take(SQUARE_SIZE)
+            .any(|&cell| cell == num)
+    });
+
     true
 }
 
@@ -79,7 +85,7 @@ pub fn is_num_valid(board: &[Vec<usize>], row: usize, col: usize, num: usize) ->
 // https://en.wikipedia.org/wiki/Sudoku_solving_algorithms#Backtracking
 // inspired by https://gist.github.com/raeffu/8331328
 
-pub fn resolv_backtrack(board: &mut Vec<Vec<usize>>, mut row: usize, mut col: usize) -> bool {
+pub fn resolv_backtrack(board: &mut [Vec<usize>], mut row: usize, mut col: usize) -> bool {
     if col == board.len() {
         col = 0;
         row += 1;
