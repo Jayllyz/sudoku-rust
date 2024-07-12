@@ -1,6 +1,7 @@
 # Sudoku-rust 🧩
 
 ![ci](https://github.com/jayllyz/sudoku-rust/actions/workflows/ci.yml/badge.svg)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/)
 
 Personal project to learn Rust and improve my algorithm skills.
 Recently started learning Rust and wanted to build something to practice because i really like the language.
