@@ -1,6 +1,6 @@
 use codspeed_criterion_compat::{black_box, criterion_group, criterion_main, Criterion};
 use lazy_static::lazy_static;
-use sudoku_rust::sudoku::{generate_board, is_num_valid, resolv_backtrack};
+use sudoku_rust::sudoku::{is_num_valid, resolv_backtrack};
 
 const BOARD_SIZE: usize = 9;
 
@@ -38,25 +38,6 @@ lazy_static! {
         vec![9, 0, 3, 0, 0, 0, 0, 0, 0],
         vec![0, 2, 0, 0, 0, 0, 1, 0, 0]
     ];
-}
-
-fn benchmark_generate_board(c: &mut Criterion) {
-    let mut group = c.benchmark_group("generate_board");
-    group.sample_size(200);
-
-    group.bench_function("9x9 easy", |b| {
-        b.iter(|| generate_board(black_box(BOARD_SIZE), black_box(1)))
-    });
-
-    group.bench_function("9x9 medium", |b| {
-        b.iter(|| generate_board(black_box(BOARD_SIZE), black_box(2)))
-    });
-
-    group.bench_function("9x9 hard", |b| {
-        b.iter(|| generate_board(black_box(BOARD_SIZE), black_box(3)))
-    });
-
-    group.finish();
 }
 
 fn benchmark_resolv_backtrack(c: &mut Criterion) {
@@ -108,10 +89,5 @@ fn benchmark_is_num_valid(c: &mut Criterion) {
     });
 }
 
-criterion_group!(
-    benches,
-    benchmark_generate_board,
-    benchmark_resolv_backtrack,
-    benchmark_is_num_valid
-);
+criterion_group!(benches, benchmark_resolv_backtrack, benchmark_is_num_valid);
 criterion_main!(benches);

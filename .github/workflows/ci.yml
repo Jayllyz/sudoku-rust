@@ -23,7 +23,7 @@ jobs:
       - name: Install toolchain
         uses: moonrepo/setup-rust@v1
         with:
-           components: clippy,rustfmt
+           components: clippy,rustfmt,cargo-tarpaulin
            cache-base: main
            
       - name: Check formatting
@@ -35,10 +35,7 @@ jobs:
       - name: Run Build
         run: cargo build
 
-      - name: Install tarpaulin
-        run: cargo install cargo-tarpaulin
-
-      - name: Generate code coverage
+      - name: Run tests with coverage
         run: |
           cargo tarpaulin --all-features --workspace --out xml
 

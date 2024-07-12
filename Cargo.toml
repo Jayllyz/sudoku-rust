@@ -14,8 +14,9 @@ lazy_static = "1.4.0"
 actix-rt = "2.10.0"
 
 [dev-dependencies]
+cargo-tarpaulin = "0.30.0"
 codspeed-criterion-compat = "2.6.0"
-criterion = "0.4"
+criterion = "0.5.1"
 
 [lib]
 name = "sudoku_rust"
