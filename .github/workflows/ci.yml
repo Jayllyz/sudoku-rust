@@ -23,8 +23,9 @@ jobs:
       - name: Install toolchain
         uses: moonrepo/setup-rust@v1
         with:
-           components: clippy,rustfmt,cargo-tarpaulin
+           components: clippy,rustfmt
            cache-base: main
+           bins: cargo-tarpaulin
            
       - name: Check formatting
         run: cargo fmt --all --check
