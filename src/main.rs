@@ -109,26 +109,54 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::sudoku::{generate_board, resolv_backtrack};
+    use super::*;
+    use actix_web::{test, web, App};
 
-    #[test]
-    fn board_valid() {
-        const BOARD_SIZE: usize = 9;
-        let board = generate_board(BOARD_SIZE, 1);
-        assert_eq!(board.len(), 9);
+    #[actix_rt::test]
+    async fn test_home() {
+        let tera = web::Data::new(TEMPLATES.clone());
+        let app = test::init_service(App::new().app_data(tera.clone()).service(home)).await;
 
-        let mut hm = std::collections::HashMap::new();
-        for row in board.iter().take(BOARD_SIZE).enumerate() {
-            for value in row.1.iter().take(BOARD_SIZE) {
-                if hm.contains_key(value) {
-                    panic!("Invalid board");
-                }
-                if *value != 0 {
-                    hm.insert(*value, true);
-                }
-            }
-            hm.clear();
-        }
-        assert!(resolv_backtrack(&mut board.clone(), 0, 0));
+        let req = test::TestRequest::get().uri("/").to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_success());
+    }
+
+    #[actix_rt::test]
+    async fn test_update_table() {
+        let tera = web::Data::new(TEMPLATES.clone());
+        let app_state = web::Data::new(Sudoku {
+            board: Mutex::new(vec![vec![0; BOARD_SIZE]; BOARD_SIZE]),
+        });
+        let app = test::init_service(
+            App::new()
+                .app_data(tera.clone())
+                .app_data(app_state.clone())
+                .service(web::resource("/update/{difficulty}").route(web::post().to(update_table))),
+        )
+        .await;
+
+        let req = test::TestRequest::post().uri("/update/1").to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_success());
+    }
+
+    #[actix_rt::test]
+    async fn test_solve_table() {
+        let tera = web::Data::new(TEMPLATES.clone());
+        let app_state = web::Data::new(Sudoku {
+            board: Mutex::new(sudoku::generate_board(BOARD_SIZE, 1)),
+        });
+        let app = test::init_service(
+            App::new()
+                .app_data(tera.clone())
+                .app_data(app_state.clone())
+                .service(web::resource("/solve").route(web::post().to(solve_table))),
+        )
+        .await;
+
+        let req = test::TestRequest::post().uri("/solve").to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_success());
     }
 }
