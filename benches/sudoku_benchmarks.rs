@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use codspeed_criterion_compat::{black_box, criterion_group, criterion_main, Criterion};
 use lazy_static::lazy_static;
 use sudoku_rust::sudoku::{generate_board, is_num_valid, resolv_backtrack};
 
@@ -42,6 +42,7 @@ lazy_static! {
 
 fn benchmark_generate_board(c: &mut Criterion) {
     let mut group = c.benchmark_group("generate_board");
+    group.sample_size(200);
 
     group.bench_function("9x9 easy", |b| {
         b.iter(|| generate_board(black_box(BOARD_SIZE), black_box(1)))
@@ -60,6 +61,7 @@ fn benchmark_generate_board(c: &mut Criterion) {
 
 fn benchmark_resolv_backtrack(c: &mut Criterion) {
     let mut group = c.benchmark_group("resolv_backtrack");
+    group.sample_size(200);
 
     group.bench_function("easy", |b| {
         b.iter(|| {
