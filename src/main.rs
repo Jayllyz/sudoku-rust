@@ -2,9 +2,10 @@ use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use tera::{Context, Tera};
-mod sudoku;
+pub mod sudoku;
 
 const BOARD_SIZE: usize = 9;
+
 struct Sudoku {
     pub board: Mutex<Vec<Vec<usize>>>,
 }
@@ -39,6 +40,7 @@ async fn home(tera: web::Data<Tera>) -> impl Responder {
     HttpResponse::Ok().body(template)
 }
 
+#[allow(dead_code)]
 async fn update_table(
     tera: web::Data<Tera>,
     app_state: web::Data<Sudoku>,
@@ -58,6 +60,7 @@ async fn update_table(
     HttpResponse::Ok().body(template)
 }
 
+#[allow(dead_code)]
 async fn solve_table(tera: web::Data<Tera>, data: web::Data<Sudoku>) -> impl Responder {
     let mut board = data.board.lock().unwrap().clone();
     sudoku::resolv_backtrack(&mut board, 0, 0);
