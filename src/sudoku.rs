@@ -1,16 +1,14 @@
-use rand::prelude::SliceRandom;
-use rand::Rng;
+use fastrand;
 
 const SQUARE_SIZE: usize = 3;
 
 pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
     loop {
         let mut board = vec![vec![0; size]; size];
-        let mut rng = rand::thread_rng();
 
         // Fill the diagonal blocks
         for i in (0..size).step_by(SQUARE_SIZE) {
-            fill_block(&mut board, i, i, &mut rng);
+            fill_block(&mut board, i, i);
         }
 
         // Solve the board
@@ -19,15 +17,15 @@ pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
         }
 
         // Remove numbers
-        remove_numbers(&mut board, difficulty, &mut rng);
+        remove_numbers(&mut board, difficulty);
         return board;
     }
 }
 
 // Fill a square block with random numbers
-fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl Rng) {
+fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize) {
     let mut nums: Vec<usize> = (1..=board.len()).collect();
-    nums.shuffle(rng);
+    fastrand::shuffle(&mut nums);
 
     for i in 0..SQUARE_SIZE {
         for j in 0..SQUARE_SIZE {
@@ -36,7 +34,7 @@ fn fill_block(board: &mut [Vec<usize>], row: usize, col: usize, rng: &mut impl R
     }
 }
 
-fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rng) {
+fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize) {
     let size = board.len();
     let total_cells = size * size;
     let to_remove = match difficulty {
@@ -49,7 +47,7 @@ fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize, rng: &mut impl Rn
     let mut positions: Vec<(usize, usize)> = (0..size)
         .flat_map(|r| (0..size).map(move |c| (r, c)))
         .collect();
-    positions.shuffle(rng);
+    fastrand::shuffle(&mut positions);
 
     for (row, col) in positions.iter().take(to_remove) {
         board[*row][*col] = 0;
@@ -126,8 +124,7 @@ mod tests {
     #[test]
     fn test_fill_block() {
         let mut board = vec![vec![0; 9]; 9];
-        let mut rng = rand::thread_rng();
-        fill_block(&mut board, 0, 0, &mut rng);
+        fill_block(&mut board, 0, 0);
 
         let mut numbers = Vec::new();
         for i in 0..3 {
@@ -142,8 +139,7 @@ mod tests {
     #[test]
     fn test_remove_numbers() {
         let mut board = vec![vec![1; 9]; 9];
-        let mut rng = rand::thread_rng();
-        remove_numbers(&mut board, 1, &mut rng);
+        remove_numbers(&mut board, 1);
 
         let zeros = board.iter().flatten().filter(|&&x| x == 0).count();
         assert!(zeros > 0);
