@@ -22,6 +22,13 @@ criterion = "0.5.1"
 name = "sudoku_rust"
 path = "src/main.rs"
 
+[profile.release]
+lto = true
+opt-level = 3
+
+[profile.dev]
+opt-level = "s"
+
 [[bench]]
 name = "sudoku_benchmarks"
 harness = false

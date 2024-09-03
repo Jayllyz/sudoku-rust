@@ -20,33 +20,33 @@ Recently started learning Rust and wanted to build something to practice because
 Clone the project
 
 ```bash
-  git clone https://github.com/Jayllyz/sudoku-rust.git
+git clone https://github.com/Jayllyz/sudoku-rust.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd sudoku-rust
+cd sudoku-rust
 ```
 
 Build the docker image
 
 ```bash
-  # with live reload
-  docker build -t sudoku-rust --target=dev .
+# with live reload
+docker build -t sudoku-rust --target=dev .
 
-  # release optimized
-  docker build -t sudoku-rust --target=prod .
+# release optimized
+docker build -t sudoku-rust --target=prod .
 ```
 
 Run the docker container
 
 ```bash
-  # with live reload
-  docker run --rm --name sudoku-rust -it -p 8000:8000 -v $(pwd):/app sudoku-rust
+# with live reload
+docker run --rm --name sudoku-rust -it -p 8000:8000 -v $(pwd):/app sudoku-rust
 
-  # release optimized
-  docker run --name sudoku-rust -it -p 8000:8000 sudoku-rust
+# release optimized
+docker run --name sudoku-rust -it -p 8000:8000 sudoku-rust
 ```
 
 ## Author 👨‍💻

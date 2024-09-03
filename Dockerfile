@@ -1,8 +1,8 @@
-FROM rust:1 AS base
+FROM rust:1.80 AS base
 RUN cargo install cargo-chef
 WORKDIR /app
 
-FROM base AS dev 
+FROM base AS dev
 RUN cargo install cargo-watch
 COPY . .
 CMD ["cargo", "watch", "-x", "run"]
