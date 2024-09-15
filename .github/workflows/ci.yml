@@ -13,6 +13,7 @@ env:
   RUST_BACKTRACE: 1
   RUSTFLAGS: "-Dwarnings"
   CI: true
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   code-quality:
