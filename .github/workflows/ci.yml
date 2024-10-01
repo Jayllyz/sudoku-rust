@@ -34,8 +34,8 @@ jobs:
       - name: 🔍 Run Clippy
         run: cargo clippy
 
-  build-and-test:
-    name: Build and Test
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
@@ -46,8 +46,8 @@ jobs:
         with:
             bins: cargo-tarpaulin
 
-      - name: 🏗️ Build
-        run: cargo build --release
+      - name: 🏗️ Check
+        run: cargo check
 
       - name: 🧪 Run tests with coverage
         run: |

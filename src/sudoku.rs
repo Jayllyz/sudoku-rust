@@ -44,9 +44,8 @@ fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize) {
         _ => total_cells / 3,     // Default to Easy
     };
 
-    let mut positions: Vec<(usize, usize)> = (0..size)
-        .flat_map(|r| (0..size).map(move |c| (r, c)))
-        .collect();
+    let mut positions: Vec<(usize, usize)> =
+        (0..size).flat_map(|r| (0..size).map(move |c| (r, c))).collect();
     fastrand::shuffle(&mut positions);
 
     for (row, col) in positions.iter().take(to_remove) {
@@ -65,12 +64,12 @@ pub fn is_num_valid(board: &[Vec<usize>], row: usize, col: usize, num: usize) ->
     let sub_row = (row / SQUARE_SIZE) * SQUARE_SIZE;
     let sub_col = (col / SQUARE_SIZE) * SQUARE_SIZE;
 
-    if board.iter().skip(sub_row).take(SQUARE_SIZE).any(|row| {
-        row.iter()
-            .skip(sub_col)
-            .take(SQUARE_SIZE)
-            .any(|&cell| cell == num)
-    }) {
+    if board
+        .iter()
+        .skip(sub_row)
+        .take(SQUARE_SIZE)
+        .any(|row| row.iter().skip(sub_col).take(SQUARE_SIZE).any(|&cell| cell == num))
+    {
         return false;
     }
 

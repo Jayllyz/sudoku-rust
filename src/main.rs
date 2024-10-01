@@ -53,9 +53,7 @@ async fn update_table(
     let mut context = Context::new();
     context.insert("title", "Sudoku-rust");
     context.insert("rows", &board);
-    let template = tera
-        .render("pages/index.html", &context)
-        .expect("Error during rendering");
+    let template = tera.render("pages/index.html", &context).expect("Error during rendering");
 
     HttpResponse::Ok().body(template)
 }
@@ -69,18 +67,15 @@ async fn solve_table(tera: web::Data<Tera>, data: web::Data<Sudoku>) -> impl Res
     let mut context = Context::new();
     context.insert("title", "Sudoku-rust");
     context.insert("rows", &board);
-    let template = tera
-        .render("pages/index.html", &context)
-        .expect("Error during rendering");
+    let template = tera.render("pages/index.html", &context).expect("Error during rendering");
 
     HttpResponse::Ok().body(template)
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let app_state = web::Data::new(Sudoku {
-        board: Mutex::new(vec![vec![0; BOARD_SIZE]; BOARD_SIZE]),
-    });
+    let app_state =
+        web::Data::new(Sudoku { board: Mutex::new(vec![vec![0; BOARD_SIZE]; BOARD_SIZE]) });
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
@@ -125,9 +120,8 @@ mod tests {
     #[actix_rt::test]
     async fn test_update_table() {
         let tera = web::Data::new(TEMPLATES.clone());
-        let app_state = web::Data::new(Sudoku {
-            board: Mutex::new(vec![vec![0; BOARD_SIZE]; BOARD_SIZE]),
-        });
+        let app_state =
+            web::Data::new(Sudoku { board: Mutex::new(vec![vec![0; BOARD_SIZE]; BOARD_SIZE]) });
         let app = test::init_service(
             App::new()
                 .app_data(tera.clone())
@@ -144,9 +138,8 @@ mod tests {
     #[actix_rt::test]
     async fn test_solve_table() {
         let tera = web::Data::new(TEMPLATES.clone());
-        let app_state = web::Data::new(Sudoku {
-            board: Mutex::new(sudoku::generate_board(BOARD_SIZE, 1)),
-        });
+        let app_state =
+            web::Data::new(Sudoku { board: Mutex::new(sudoku::generate_board(BOARD_SIZE, 1)) });
         let app = test::init_service(
             App::new()
                 .app_data(tera.clone())
