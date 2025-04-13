@@ -15,7 +15,7 @@ fastrand = "2.3.0"
 
 [dev-dependencies]
 cargo-tarpaulin = "0.32.3"
-codspeed-criterion-compat = "2.10.0"
+codspeed-criterion-compat = "2.10.1"
 criterion2 = "3.0.0"
 
 [lib]
