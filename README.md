@@ -2,7 +2,6 @@
 
 ![ci](https://github.com/jayllyz/sudoku-rust/actions/workflows/ci.yml/badge.svg)
 [![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/)
-[![codecov](https://codecov.io/github/Jayllyz/sudoku-rust/graph/badge.svg?token=3BH60KHVOV)](https://codecov.io/github/Jayllyz/sudoku-rust)
 
 Personal project to learn Rust and improve my algorithm skills.
 Recently started learning Rust and wanted to build something to practice because i really like the language.

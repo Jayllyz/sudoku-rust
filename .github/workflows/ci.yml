@@ -20,41 +20,46 @@ jobs:
     name: Code Quality
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          persist-credentials: false
 
-      - name: 🛠️ Install Rust toolchain
+      - name: Install Rust toolchain
         uses: moonrepo/setup-rust@ede6de059f8046a5e236c94046823e2af11ca670 # v1.2.2
         with:
           components: clippy,rustfmt
 
-      - name: 🎨 Check formatting
+      - name: Check formatting
         run: cargo fmt --all --check
 
-      - name: 🔍 Run Clippy
+      - name: Run Clippy
         run: cargo clippy
 
   test:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        with:
+          persist-credentials: false
 
-      - name: 🛠️ Install Rust toolchain
+      - name: Install Rust toolchain
         uses: moonrepo/setup-rust@ede6de059f8046a5e236c94046823e2af11ca670 # v1.2.2
         with:
-            bins: cargo-tarpaulin
+          cache-base: main
+          bins: cargo-nextest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🏗️ Check
-        run: cargo check
+      - name: Check
+        run: cargo check --all-targets --all-features
 
-      - name: 🧪 Run tests with coverage
-        run: |
-          cargo tarpaulin --all-features --workspace --out xml
+      - name: Run tests
+        run: cargo nextest run
 
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+      - name: Run doc tests
+        run: cargo test --doc
+
+
