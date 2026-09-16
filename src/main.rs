@@ -134,6 +134,37 @@ mod tests {
     }
 
     #[actix_rt::test]
+    async fn test_update_table_stores_generated_board() {
+        let tera = web::Data::new(TEMPLATES.clone());
+        let app_state =
+            web::Data::new(Sudoku { board: Mutex::new(vec![vec![0; BOARD_SIZE]; BOARD_SIZE]) });
+
+        let _ = update_table(tera, app_state.clone(), web::Path::from(1usize)).await;
+
+        let board = app_state.board.lock().unwrap().clone();
+        assert_eq!(board.len(), BOARD_SIZE);
+        assert!(
+            board.iter().flatten().any(|&x| x != 0),
+            "update_table should replace the stored board with a generated one"
+        );
+    }
+
+    #[actix_rt::test]
+    async fn test_solve_table_stores_solved_board() {
+        let tera = web::Data::new(TEMPLATES.clone());
+        let app_state =
+            web::Data::new(Sudoku { board: Mutex::new(sudoku::generate_board(BOARD_SIZE, 1)) });
+
+        let _ = solve_table(tera, app_state.clone()).await;
+
+        let board = app_state.board.lock().unwrap().clone();
+        assert!(
+            board.iter().flatten().all(|&x| x != 0),
+            "solve_table should store the solved board"
+        );
+    }
+
+    #[actix_rt::test]
     async fn test_solve_table() {
         let tera = web::Data::new(TEMPLATES.clone());
         let app_state =

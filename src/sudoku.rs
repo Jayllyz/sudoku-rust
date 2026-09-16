@@ -3,7 +3,10 @@ use fastrand;
 const SQUARE_SIZE: usize = 3;
 
 pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
-    loop {
+    // Bounded retry: a correctly working generator succeeds almost immediately.
+    const MAX_ATTEMPTS: usize = 128;
+
+    for _ in 0..MAX_ATTEMPTS {
         let mut board = vec![vec![0; size]; size];
 
         // Fill the diagonal blocks
@@ -20,6 +23,8 @@ pub fn generate_board(size: usize, difficulty: usize) -> Vec<Vec<usize>> {
         remove_numbers(&mut board, difficulty);
         return board;
     }
+
+    panic!("failed to generate a solvable board after {MAX_ATTEMPTS} attempts");
 }
 
 // Fill a square block with random numbers
@@ -38,10 +43,9 @@ fn remove_numbers(board: &mut [Vec<usize>], difficulty: usize) {
     let size = board.len();
     let total_cells = size * size;
     let to_remove = match difficulty {
-        1 => total_cells / 3,     // Easy: remove 1/3
         2 => total_cells * 4 / 9, // Medium: remove 4/9
         3 => total_cells * 2 / 3, // Very Hard: remove 2/3
-        _ => total_cells / 3,     // Default to Easy
+        _ => total_cells / 3,     // Easy: remove 1/3
     };
 
     let mut positions: Vec<(usize, usize)> =
@@ -136,12 +140,74 @@ mod tests {
     }
 
     #[test]
+    fn test_fill_block_at_offset() {
+        let mut board = vec![vec![0; 9]; 9];
+        fill_block(&mut board, 3, 6);
+
+        let mut numbers = Vec::new();
+        for row in board.iter().skip(3).take(3) {
+            for &cell in row.iter().skip(6).take(3) {
+                numbers.push(cell);
+            }
+        }
+        numbers.sort_unstable();
+        assert_eq!(numbers, (1..=9).collect::<Vec<_>>());
+
+        // Everything outside the requested block must be left untouched.
+        for (r, row) in board.iter().enumerate() {
+            for (c, &cell) in row.iter().enumerate() {
+                if !(3..6).contains(&r) || !(6..9).contains(&c) {
+                    assert_eq!(cell, 0, "cell ({r},{c}) should be untouched");
+                }
+            }
+        }
+    }
+
+    #[test]
     fn test_remove_numbers() {
         let mut board = vec![vec![1; 9]; 9];
         remove_numbers(&mut board, 1);
 
         let zeros = board.iter().flatten().filter(|&&x| x == 0).count();
         assert!(zeros > 0);
+    }
+
+    #[test]
+    fn test_remove_numbers_exact_count_by_difficulty() {
+        let size = 9;
+        let total_cells = size * size;
+
+        // Difficulty 1 is the default, so unknown values fall back to the easy count.
+        let cases = [
+            (1, total_cells / 3),
+            (2, total_cells * 4 / 9),
+            (3, total_cells * 2 / 3),
+            (0, total_cells / 3),
+            (4, total_cells / 3),
+        ];
+
+        for (difficulty, expected) in cases {
+            let mut board = vec![vec![7; size]; size];
+            remove_numbers(&mut board, difficulty);
+
+            let zeros = board.iter().flatten().filter(|&&x| x == 0).count();
+            assert_eq!(zeros, expected, "difficulty {difficulty} removed the wrong amount");
+        }
+    }
+
+    #[test]
+    fn test_remove_numbers_scales_with_board_size() {
+        let size = 9;
+        let mut small = vec![vec![7; size]; size];
+        let mut large = vec![vec![7; size * 2]; size * 2];
+
+        remove_numbers(&mut small, 1);
+        remove_numbers(&mut large, 1);
+
+        let small_zeros = small.iter().flatten().filter(|&&x| x == 0).count();
+        let large_zeros = large.iter().flatten().filter(|&&x| x == 0).count();
+
+        assert!(large_zeros > small_zeros);
     }
 
     #[test]
@@ -163,6 +229,38 @@ mod tests {
     }
 
     #[test]
+    fn test_is_num_valid_matches_reference() {
+        let size = 9;
+        let num = 7;
+
+        for conflict_row in 0..size {
+            for conflict_col in 0..size {
+                let mut board = vec![vec![0; size]; size];
+                board[conflict_row][conflict_col] = num;
+
+                for query_row in 0..size {
+                    for query_col in 0..size {
+                        if (query_row, query_col) == (conflict_row, conflict_col) {
+                            continue;
+                        }
+
+                        let conflicts = conflict_row == query_row
+                            || conflict_col == query_col
+                            || (conflict_row / SQUARE_SIZE == query_row / SQUARE_SIZE
+                                && conflict_col / SQUARE_SIZE == query_col / SQUARE_SIZE);
+
+                        assert_eq!(
+                            is_num_valid(&board, query_row, query_col, num),
+                            !conflicts,
+                            "query=({query_row},{query_col}) conflict=({conflict_row},{conflict_col})"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn test_resolv_backtrack() {
         let mut board = vec![
             vec![5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -180,6 +278,20 @@ mod tests {
 
         for row in &board {
             assert!(row.iter().all(|&x| x != 0));
+        }
+    }
+
+    #[test]
+    fn test_generate_board_is_solvable() {
+        for difficulty in 1..=3 {
+            let board = generate_board(9, difficulty);
+
+            assert_eq!(board.len(), 9);
+            assert!(board.iter().all(|row| row.len() == 9));
+
+            let mut solution = board.clone();
+            assert!(resolv_backtrack(&mut solution, 0, 0), "difficulty {difficulty}");
+            assert!(solution.iter().flatten().all(|&x| x != 0));
         }
     }
 
