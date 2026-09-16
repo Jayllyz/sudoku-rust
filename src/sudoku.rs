@@ -301,6 +301,48 @@ mod tests {
         board
     }
 
+    /// A deterministic, valid solved grid for any supported board size.
+    fn solved_grid(size: usize) -> Vec<Vec<usize>> {
+        let block = size.isqrt();
+        (0..size)
+            .map(|row| {
+                (0..size)
+                    .map(|col| (block * (row % block) + row / block + col) % size + 1)
+                    .collect()
+            })
+            .collect()
+    }
+
+    /// Assert `board` is a complete, legal sudoku: every row, column and block
+    /// contains each digit exactly once.
+    fn assert_valid_solution(board: &Board) {
+        let size = board.size();
+        let block = board.block();
+        let expected: Vec<usize> = (1..=size).collect();
+
+        let mut units: Vec<Vec<usize>> = Vec::new();
+        for index in 0..size {
+            units.push((0..size).map(|col| board.get(index, col)).collect());
+            units.push((0..size).map(|row| board.get(row, index)).collect());
+        }
+        for block_row in (0..size).step_by(block) {
+            for block_col in (0..size).step_by(block) {
+                units.push(
+                    (block_row..block_row + block)
+                        .flat_map(|row| {
+                            (block_col..block_col + block).map(move |col| board.get(row, col))
+                        })
+                        .collect(),
+                );
+            }
+        }
+
+        for unit in &mut units {
+            unit.sort_unstable();
+            assert_eq!(*unit, expected, "a {size}x{size} solution contains an invalid unit");
+        }
+    }
+
     #[test]
     fn test_new_board_is_empty_and_square() {
         let board = Board::new(9);
@@ -509,6 +551,7 @@ mod tests {
 
         assert!(board.resolv_backtrack());
         assert!(board.is_solved());
+        assert_valid_solution(&board);
     }
 
     #[test]
@@ -522,6 +565,60 @@ mod tests {
 
         assert!(board.resolv_backtrack());
         assert!(board.is_solved());
+        assert_valid_solution(&board);
+    }
+
+    #[test]
+    fn test_solve_all_supported_sizes() {
+        for size in [1, 4, 9, 16, 25] {
+            let mut cells = solved_grid(size);
+
+            // Blank a few cells so the solver actually has to search.
+            for i in 1..=size.min(4) {
+                cells[i - 1][i - 1] = 0;
+            }
+
+            let mut board = Board::from_rows(cells);
+            assert!(board.resolv_backtrack(), "failed to solve a {size}x{size} board");
+            assert!(board.is_solved());
+            assert_valid_solution(&board);
+        }
+    }
+
+    #[test]
+    fn test_is_solved_only_when_complete() {
+        let mut board = Board::new(9);
+        assert!(!board.is_solved());
+
+        board = Board::from_rows(solved_grid(9));
+        assert!(board.is_solved());
+
+        board.set(0, 0, 0);
+        assert!(!board.is_solved());
+    }
+
+    #[test]
+    fn test_is_num_valid_all_supported_sizes() {
+        for size in [1usize, 4, 9, 16, 25] {
+            let block = size.isqrt();
+            let mut board = Board::new(size);
+
+            // An empty board never conflicts.
+            assert!(board.is_num_valid(0, 0, size), "{size}x{size} empty board");
+
+            // A digit placed at (0, 0) is rejected in the same row, column and block.
+            board.set(0, 0, size);
+            let mut conflicts = vec![(0, size - 1), (size - 1, 0)];
+            if block > 1 {
+                conflicts.push((1, 1));
+            }
+            for (row, col) in conflicts {
+                assert!(
+                    !board.is_num_valid(row, col, size),
+                    "{size}x{size} missed a conflict at ({row},{col})"
+                );
+            }
+        }
     }
 
     #[test]
@@ -533,6 +630,7 @@ mod tests {
             assert!(solution.rows().iter().all(|row| row.len() == 9));
             assert!(solution.resolv_backtrack(), "difficulty {difficulty}");
             assert!(solution.is_solved());
+            assert_valid_solution(&solution);
         }
     }
 
