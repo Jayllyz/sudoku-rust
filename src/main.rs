@@ -1,8 +1,8 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
+use sudoku_rust::sudoku;
 use tera::{Context, Tera};
-pub mod sudoku;
 
 const BOARD_SIZE: usize = 9;
 
