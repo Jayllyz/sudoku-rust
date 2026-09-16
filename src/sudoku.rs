@@ -125,14 +125,14 @@ mod tests {
         let mut board = vec![vec![0; 9]; 9];
         fill_block(&mut board, 0, 0);
 
-        let mut numbers = Vec::new();
-        for i in 0..3 {
-            for j in 0..3 {
-                numbers.push(board[i][j]);
+        let mut numbers = [0; 9];
+        for (i, row) in board.iter().take(3).enumerate() {
+            for (j, &cell) in row.iter().take(3).enumerate() {
+                numbers[i * 3 + j] = cell;
             }
         }
-        numbers.sort();
-        assert_eq!(numbers, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        numbers.sort_unstable();
+        assert_eq!(numbers, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
 
     #[test]
