@@ -5,5 +5,5 @@ exclude_re = [
   # Equivalent mutant: at this call site `board[row][col]` is always non-zero,
   # so recursing with `col * 1` (== col) takes the same early-return path as
   # `col + 1`. Line numbers may shift; this is intentionally exact.
-  "src/sudoku.rs:104:49: replace \\+ with \\*",
+  "src/sudoku.rs:273:53: replace \\+ with \\*",
 ]
