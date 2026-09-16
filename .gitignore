@@ -2,3 +2,4 @@
 .vscode
 corbetura.xml
 coverage*
+mutants.out/

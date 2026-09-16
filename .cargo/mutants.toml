@@ -1,0 +1,9 @@
+exclude_re = [
+  # `main` binds a TCP port and runs the HTTP server forever. It cannot be
+  # exercised by the in-process test suite, so this mutant is unobservable.
+  "replace main -> std::io::Result",
+  # Equivalent mutant: at this call site `board[row][col]` is always non-zero,
+  # so recursing with `col * 1` (== col) takes the same early-return path as
+  # `col + 1`. Line numbers may shift; this is intentionally exact.
+  "src/sudoku.rs:104:49: replace \\+ with \\*",
+]
