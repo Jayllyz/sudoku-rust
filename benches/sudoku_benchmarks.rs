@@ -1,11 +1,11 @@
 use codspeed_criterion_compat::{black_box, criterion_group, criterion_main, Criterion};
 use lazy_static::lazy_static;
-use sudoku_rust::sudoku::{is_num_valid, resolv_backtrack};
+use sudoku_rust::sudoku::Board;
 
 const BOARD_SIZE: usize = 9;
 
 lazy_static! {
-    static ref EASY_BOARD: Vec<Vec<usize>> = vec![
+    static ref EASY_BOARD: Board = Board::from_rows(vec![
         vec![5, 3, 0, 0, 7, 0, 0, 0, 0],
         vec![6, 0, 0, 1, 9, 5, 0, 0, 0],
         vec![0, 9, 8, 0, 0, 0, 0, 6, 0],
@@ -15,8 +15,8 @@ lazy_static! {
         vec![0, 6, 0, 0, 0, 0, 2, 8, 0],
         vec![0, 0, 0, 4, 1, 9, 0, 0, 5],
         vec![0, 0, 0, 0, 8, 0, 0, 7, 9]
-    ];
-    static ref MEDIUM_BOARD: Vec<Vec<usize>> = vec![
+    ]);
+    static ref MEDIUM_BOARD: Board = Board::from_rows(vec![
         vec![0, 0, 0, 2, 6, 0, 7, 0, 1],
         vec![6, 8, 0, 0, 7, 0, 0, 9, 0],
         vec![1, 9, 0, 0, 0, 4, 5, 0, 0],
@@ -26,8 +26,8 @@ lazy_static! {
         vec![0, 0, 9, 3, 0, 0, 0, 7, 4],
         vec![0, 4, 0, 0, 5, 0, 0, 3, 6],
         vec![7, 0, 3, 0, 1, 8, 0, 0, 0]
-    ];
-    static ref HARD_BOARD: Vec<Vec<usize>> = vec![
+    ]);
+    static ref HARD_BOARD: Board = Board::from_rows(vec![
         vec![0, 0, 0, 6, 0, 0, 4, 0, 0],
         vec![7, 0, 0, 0, 0, 3, 6, 0, 0],
         vec![0, 0, 0, 0, 9, 1, 0, 8, 0],
@@ -37,7 +37,7 @@ lazy_static! {
         vec![0, 4, 0, 2, 0, 0, 0, 6, 0],
         vec![9, 0, 3, 0, 0, 0, 0, 0, 0],
         vec![0, 2, 0, 0, 0, 0, 1, 0, 0]
-    ];
+    ]);
 }
 
 fn benchmark_resolv_backtrack(c: &mut Criterion) {
@@ -46,22 +46,22 @@ fn benchmark_resolv_backtrack(c: &mut Criterion) {
 
     group.bench_function("easy", |b| {
         b.iter(|| {
-            let mut board = EASY_BOARD.clone();
-            resolv_backtrack(black_box(&mut board), 0, 0)
+            let mut board = black_box(EASY_BOARD.clone());
+            black_box(board.resolv_backtrack())
         })
     });
 
     group.bench_function("medium", |b| {
         b.iter(|| {
-            let mut board = MEDIUM_BOARD.clone();
-            resolv_backtrack(black_box(&mut board), 0, 0)
+            let mut board = black_box(MEDIUM_BOARD.clone());
+            black_box(board.resolv_backtrack())
         })
     });
 
     group.bench_function("hard", |b| {
         b.iter(|| {
-            let mut board = HARD_BOARD.clone();
-            resolv_backtrack(black_box(&mut board), 0, 0)
+            let mut board = black_box(HARD_BOARD.clone());
+            black_box(board.resolv_backtrack())
         })
     });
 
@@ -76,8 +76,7 @@ fn benchmark_is_num_valid(c: &mut Criterion) {
             for row in 0..BOARD_SIZE {
                 for col in 0..BOARD_SIZE {
                     for num in 1..=BOARD_SIZE {
-                        black_box(is_num_valid(
-                            black_box(&board),
+                        black_box(board.is_num_valid(
                             black_box(row),
                             black_box(col),
                             black_box(num),
