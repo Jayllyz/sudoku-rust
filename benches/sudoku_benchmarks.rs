@@ -1,4 +1,4 @@
-use codspeed_criterion_compat::{black_box, criterion_group, criterion_main, Criterion};
+use codspeed_criterion_compat::{Criterion, black_box, criterion_group, criterion_main};
 use lazy_static::lazy_static;
 use sudoku_rust::sudoku::Board;
 

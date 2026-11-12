@@ -1,4 +1,4 @@
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 use sudoku_rust::sudoku::Board;
@@ -106,7 +106,7 @@ async fn main() -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::{test, web, App};
+    use actix_web::{App, test, web};
 
     #[actix_rt::test]
     async fn test_home() {
